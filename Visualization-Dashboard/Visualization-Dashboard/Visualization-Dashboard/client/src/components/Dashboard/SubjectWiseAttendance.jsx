@@ -70,7 +70,7 @@ const SubjectWiseAttendance = () => {
             spacing={5} // Space between items
             m={50}
           >
-            {[...Array(6)].map((_, index) => (
+            {[...Array(7)].map((_, index) => (
               <Box
                 key={index}
                 flex="1"

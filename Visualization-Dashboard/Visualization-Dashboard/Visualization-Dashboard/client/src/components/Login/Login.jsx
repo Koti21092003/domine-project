@@ -24,7 +24,7 @@ const LoginPage = () => {
     setIsOpen(true);
     setTimeout(() => {
       setIsOpen(false);
-      window.location.href = '/dashboard';
+      window.location.href = '/main';
     }, 2000);
   };
 

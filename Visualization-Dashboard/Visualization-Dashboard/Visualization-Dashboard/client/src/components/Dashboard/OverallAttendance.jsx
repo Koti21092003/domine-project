@@ -31,16 +31,29 @@ const OverallAttendance = () => {
   };
 
   const processOverallAttendance = (data) => {
-    if (data && data.length > 1) {
-      const totalColumnIndex = 2; // Assuming "Total" is in the 3rd column (index 2)
+    if (data && data.length > 4) { // Ensure sufficient rows
+      const headerRowIndex = 3; // Actual headers are on the 4th row (index 3)
+      const headerRow = data[headerRowIndex];
+
+      // Adjusted: Dynamically find column index for 'Total' or '%'
+      const percentageColumnIndex = headerRow.findIndex((cell) =>
+        typeof cell === 'string' && (cell.trim() === '%' || cell.trim().toLowerCase() === 'Total')
+      );
+
+      if (percentageColumnIndex === -1) {
+        alert('Percentage column not found. Please check the file structure.');
+        return;
+      }
+
       const attendanceCounts = { below65: 0, between65And75: 0, above75: 0 };
 
-      data.slice(1).forEach((row) => { // Skip the header row
-        const total = parseFloat(row[totalColumnIndex]);
-        if (!isNaN(total)) {
-          if (total < 65) {
+      // Skip to the data rows after the header row
+      data.slice(headerRowIndex + 1).forEach((row) => {
+        const percentage = parseFloat(row[percentageColumnIndex]);
+        if (!isNaN(percentage)) {
+          if (percentage < 65) {
             attendanceCounts.below65++;
-          } else if (total >= 65 && total <= 75) {
+          } else if (percentage >= 65 && percentage <= 75) {
             attendanceCounts.between65And75++;
           } else {
             attendanceCounts.above75++;
@@ -49,6 +62,8 @@ const OverallAttendance = () => {
       });
 
       setOverallData(attendanceCounts);
+    } else {
+      alert('Invalid file structure or insufficient data.');
     }
   };
 
@@ -86,7 +101,12 @@ const OverallAttendance = () => {
         borderRadius={20}
         textAlign="center"
       >
-        <RegionChart data={overallData} />
+        <RegionChart
+          data={Object.entries(overallData).map(([category, value]) => ({
+            category,
+            value,
+          }))}
+        />
       </Box>
 
       <Footer />

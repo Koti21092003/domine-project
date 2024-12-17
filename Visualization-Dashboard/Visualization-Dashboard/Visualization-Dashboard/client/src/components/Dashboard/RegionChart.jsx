@@ -1,34 +1,90 @@
-import React from 'react';
-import { Box, Center, Text } from '@chakra-ui/react';
-import { Pie } from 'react-chartjs-2';
+import React, { useState } from 'react';
+import { Doughnut } from 'react-chartjs-2';
+import { Box, Heading, Text, VStack } from '@chakra-ui/react';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
-const RegionChart = ({ data }) => {
-  if (!data || typeof data !== 'object') {
-    return <Text>No data available</Text>;
-  }
+// Register necessary components for Chart.js
+ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
-  // Prepare data for the Pie chart
+const RegionChart = ({ data, i, subject }) => {
+  const [selectedRegion, setSelectedRegion] = useState(null);
+
+  // Extract total percentages and student names
+  const totalPercentages = (data || [])
+    .slice(i + 6) // Adjust based on where your data starts
+    .map(row => ({
+      percentage: row[16], // Assuming percentage is in column 16
+      name: row[3], // Assuming "Student Name" is in column 3
+    }))
+    .filter(row => row.percentage);
+
+  // Categorize the percentages into the three ranges
+  const categorizedData = {
+    "Below 65%": totalPercentages.filter(row => row.percentage < 65),
+    "65%-75%": totalPercentages.filter(row => row.percentage >= 65 && row.percentage <= 75),
+    "Above 75": totalPercentages.filter(row => row.percentage > 75),
+  };
+
+  const regionCounts = Object.keys(categorizedData).reduce((acc, key) => {
+    acc[key] = categorizedData[key].length;
+    return acc;
+  }, {});
+
   const chartData = {
-    labels: ['Below 65%', '65%-75%', 'Above 75%'],
+    labels: Object.keys(regionCounts),
     datasets: [
       {
-        data: [data.below65, data.between65And75, data.above75],
-        backgroundColor: ['#FF6384', '#FFCE56', '#36A2EB'],
-        hoverBackgroundColor: ['#FF6384', '#FFCE56', '#36A2EB'],
+        data: Object.values(regionCounts),
+        backgroundColor: ['#1E88E5', '#D81B60', '#FFC107'],
+        hoverBackgroundColor: ['#1565C0', '#C2185B', '#FFB300'],
       },
     ],
   };
 
+  // Handle chart click event
+  const handleChartClick = (event, elements) => {
+    if (elements.length > 0) {
+      const clickedIndex = elements[0].index;
+      const clickedRegion = Object.keys(categorizedData)[clickedIndex];
+      setSelectedRegion(categorizedData[clickedRegion]);
+    } else {
+      setSelectedRegion(null);
+    }
+  };
+
   return (
     <Box>
-      <Text fontSize="xl" fontWeight="bold" mb={4}>
-        Overall Attendance Distribution
-      </Text>
-      <Center>
-        <Box width="300px" height="300px">
-          <Pie data={chartData} />
+      <Heading as="h2" mb={4}>
+        {subject}
+      </Heading>
+      <Doughnut
+        data={chartData}
+        options={{
+          plugins: {
+            datalabels: {
+              color: '#fff',
+              font: {
+                weight: 'bold',
+              },
+              formatter: (value) => value,
+            },
+          },
+          onClick: handleChartClick,
+        }}
+      />
+      {selectedRegion && (
+        <Box mt={6}>
+          <Heading as="h4" size="md" mb={4}>
+            Details for Selected Region:
+          </Heading>
+          <VStack align="start">
+            {selectedRegion.map((row, idx) => (
+              <Text key={idx}>{row.name}</Text>
+            ))}
+          </VStack>
         </Box>
-      </Center>
+      )}
     </Box>
   );
 };

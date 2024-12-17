@@ -4,18 +4,13 @@ import {
   Box,
   Flex,
   Container,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  useColorMode,
+  Button,
+  Image,
+  Text,
   useToast,
 } from "@chakra-ui/react";
-import { ChevronDownIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
 
 const Navbar = () => {
-  const { colorMode, toggleColorMode } = useColorMode();
   const toast = useToast();
 
   const handleLogout = () => {
@@ -42,30 +37,29 @@ const Navbar = () => {
     >
       <Container maxW="container.lg">
         <Flex justify="space-between" align="center">
-          <Box>
-            <Flex align="center">
-              <IconButton
-                aria-label="Toggle Theme"
-                icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-                bg="transparent"
-                border="none"
-                onClick={toggleColorMode}
-              />
-              <Menu>
-                <MenuButton
-                  as={IconButton}
-                  icon={<ChevronDownIcon boxSize={6} />}
-                  variant="unstyled"
-                />
-                <MenuList>
-                  <Link to={'/main'}> <MenuItem>Home</MenuItem></Link>
-                  <Link to={'/dashboard'}> <MenuItem>Attendance</MenuItem></Link>
-                  <Link to={'/results'}> <MenuItem>Results</MenuItem></Link>
-                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                </MenuList>
-              </Menu>
-            </Flex>
-          </Box>
+          <Flex align="center">
+            <Image
+              src="https://firebasestorage.googleapis.com/v0/b/koti-efce7.appspot.com/o/download.jpeg?alt=media&token=99491413-2340-4a22-a3a3-2a4614413aff"
+              alt="Centurion University Logo"
+              boxSize="40px"
+              mr={3}
+            />
+            <Text fontSize="xl" fontWeight="bold" color="white">
+              DEAN'S DASHBOARD
+            </Text>
+          </Flex>
+          <Flex gap={4}>
+            <Link to={'/main'}>
+              <Button colorScheme="blue" size="sm">Home</Button>
+            </Link>
+            <Link to={'/dashboard'}>
+              <Button colorScheme="blue" size="sm">Attendance</Button>
+            </Link>
+            <Link to={'/results'}>
+              <Button colorScheme="blue" size="sm">Results</Button>
+            </Link>
+            <Button colorScheme="red" size="sm" onClick={handleLogout}>Logout</Button>
+          </Flex>
         </Flex>
       </Container>
     </Box>

@@ -16,7 +16,8 @@ import { useNavigate } from "react-router-dom";
 
 const Results = () => {
   const [studentsData, setStudentsData] = useState([]);
-  const [searchBacklog, setSearchBacklog] = useState("");
+  const [searchBacklog, setSearchBacklog] = useState(""); // For searching Yes/No
+  const [searchExactBacklog, setSearchExactBacklog] = useState(""); // For searching exact backlog number
   const [searchCgpa, setSearchCgpa] = useState("");
   const [searchSgpa, setSearchSgpa] = useState("");
   const [searchStudent, setSearchStudent] = useState("");
@@ -49,14 +50,35 @@ const Results = () => {
     }
   };
 
-  const filteredStudents = studentsData.filter((student) => {
-    const backlogMatch = student.allBacklog?.toString().includes(searchBacklog);
-    const cgpaMatch = student.cgpa?.toString().includes(searchCgpa);
-    const sgpaMatch = student.sgpa?.toString().includes(searchSgpa);
-    const studentMatch = student.student?.toString().toLowerCase().includes(searchStudent.toLowerCase());
+  const filteredStudents = studentsData
+    .filter((student) => {
+      const backlogMatch =
+        searchBacklog === ""
+          ? true
+          : searchBacklog.toLowerCase() === "yes"
+          ? parseFloat(student.allBacklog) > 0
+          : searchBacklog.toLowerCase() === "no"
+          ? parseFloat(student.allBacklog) === 0
+          : true; // If neither "yes" nor "no", don't filter by backlog
 
-    return backlogMatch && cgpaMatch && sgpaMatch && studentMatch;
-  });
+      const exactBacklogMatch =
+        searchExactBacklog === "" || parseInt(searchExactBacklog) === parseInt(student.allBacklog);
+
+      const cgpaMatch = student.cgpa?.toString().includes(searchCgpa);
+      const sgpaMatch = student.sgpa?.toString().includes(searchSgpa);
+      const studentMatch = student.student
+        ?.toString()
+        .toLowerCase()
+        .includes(searchStudent.toLowerCase());
+
+      return backlogMatch && exactBacklogMatch && cgpaMatch && sgpaMatch && studentMatch;
+    })
+    .sort((a, b) => {
+      if (searchBacklog.toLowerCase() === "yes") {
+        return parseFloat(a.allBacklog) - parseFloat(b.allBacklog); // Sort from smallest to largest backlog
+      }
+      return 0; // No sorting if searchBacklog is not "Yes"
+    });
 
   const navigate = useNavigate();
 
@@ -117,10 +139,17 @@ const Results = () => {
         {studentsData.length > 0 && (
           <>
             <Input
-              placeholder="Search by All Backlog (e.g., 0)"
+              placeholder="Search by All Backlog (Yes/No)"
               value={searchBacklog}
               onChange={(e) => setSearchBacklog(e.target.value)}
               marginTop="20px"
+              marginBottom="10px"
+              size="md"
+            />
+            <Input
+              placeholder="Search by Exact Backlog Number (e.g., 0, 1, 2)"
+              value={searchExactBacklog}
+              onChange={(e) => setSearchExactBacklog(e.target.value)}
               marginBottom="10px"
               size="md"
             />
